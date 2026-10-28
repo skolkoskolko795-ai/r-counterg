@@ -1,0 +1,198 @@
+<html lang="ru">
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Счётчик букв «r»</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #ffe0ec 0%, #ffd1dc 40%, #fff0f5 100%);
+    padding: 20px;
+    color: #4a2c3a;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 40px 36px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(255, 105, 150, 0.25);
+    border: 3px solid #ffc0d4;
+    text-align: center;
+    position: relative;
+  }
+
+  .card::before {
+    content: "🍓";
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,.15));
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    margin: 10px 0 6px;
+    color: #d6336c;
+    letter-spacing: .5px;
+  }
+
+  .subtitle {
+    font-size: .9rem;
+    color: #a8748a;
+    margin-bottom: 24px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 16px 18px;
+    font-size: 1.15rem;
+    border: 2px solid #ffc0d4;
+    border-radius: 16px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fffafc;
+    color: #4a2c3a;
+  }
+
+  input[type="text"]:focus {
+    border-color: #ff6b9d;
+    box-shadow: 0 0 0 4px rgba(255, 107, 157, .18);
+  }
+
+  input[type="text"]::placeholder {
+    color: #d9b3c4;
+  }
+
+  .result {
+    margin-top: 26px;
+    padding: 22px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #fff0f5, #ffe3ee);
+    border: 2px dashed #ffb3cc;
+    transition: transform .15s;
+  }
+
+  .result.pulse { animation: pulse .3s ease; }
+
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  .big-number {
+    font-size: 3.4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #d6336c;
+    text-shadow: 0 3px 0 #ffc0d4;
+  }
+
+  .label {
+    margin-top: 8px;
+    font-size: .95rem;
+    color: #a8748a;
+  }
+
+  .highlighted {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    word-break: break-all;
+    line-height: 1.7;
+  }
+
+  .highlighted .r {
+    color: #fff;
+    background: #ff6b9d;
+    border-radius: 5px;
+    padding: 0 3px;
+    font-weight: 700;
+  }
+
+  .footer {
+    margin-top: 20px;
+    font-size: .8rem;
+    color: #c99aae;
+  }
+
+  @media (max-width: 420px) {
+    .card { padding: 32px 20px; }
+    h1 { font-size: 1.3rem; }
+    .big-number { font-size: 2.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Счётчик букв «r»</h1>
+  <p class="subtitle">Введи слово или фразу — я посчитаю все «r»</p>
+
+  <input type="text" id="input" placeholder="Например: strawberrrrry" autofocus>
+
+  <div class="result" id="result">
+    <div class="big-number" id="count">0</div>
+    <div class="label" id="label">букв «r»</div>
+    <div class="highlighted" id="highlighted"></div>
+  </div>
+
+  <div class="footer">🍓 Учитываются и заглавные «R»</div>
+</div>
+
+<script>
+  const input      = document.getElementById('input');
+  const countEl    = document.getElementById('count');
+  const labelEl    = document.getElementById('label');
+  const highlightEl= document.getElementById('highlighted');
+  const resultEl   = document.getElementById('result');
+
+  // Склонение слова "буква" в зависимости от числа
+  function plural(n, one, few, many) {
+    const n10 = n % 10, n100 = n % 100;
+    if (n10 === 1 && n100 !== 11) return one;
+    if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return few;
+    return many;
+  }
+
+  function update() {
+    const text = input.value;
+    const matches = text.match(/r/gi) || [];
+    const n = matches.length;
+
+    countEl.textContent = n;
+    labelEl.textContent = plural(n, 'буква «r»', 'буквы «r»', 'букв «r»');
+
+    // Подсветка всех найденных r / R
+    if (text.length === 0) {
+      highlightEl.innerHTML = '';
+    } else {
+      const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      highlightEl.innerHTML = escaped.replace(/r/gi, m => `<span class="r">${m}</span>`);
+    }
+
+    // Небольшая анимация при изменении
+    resultEl.classList.remove('pulse');
+    void resultEl.offsetWidth;
+    resultEl.classList.add('pulse');
+  }
+
+  input.addEventListener('input', update);
+  update(); // начальное состояние
+</script>
+
+</body>
+</html>
